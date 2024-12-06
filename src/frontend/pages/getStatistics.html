@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Поиск по параметру</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+</head>
+<body class="container col-3">
+    <table class="table w-100" style="display:none" id="resultTable">
+        <thead>
+        <tr>
+            <th scope="col">Количество выполенных заявок</th>
+            <th scope="col">Среднее время выполнения</th>
+            <th scope="col">Статистика по типам неисправностей</th>
+        </tr>
+        </thead>
+        <tbody class="w-100">
+        <tr>
+        </tr>
+        </tbody>
+    </table>
+<script>
+    const submit = async () => {
+        const response = await fetch('http://localhost:3000/api/getStatistics')
+        return response
+    }
+    const go = async (e) =>{
+        let data = await submit(e);
+        if(data.status === 200){
+            const table = document.getElementById('resultTable')
+            const formattedData = await data.json()
+            table.style.display = 'block';
+            const rows = `
+                <tr><th>Количество выполенных заявок</th><td>${formattedData.ordersOfEnded || 'Нет'}</td></tr>
+                <tr><th>Среднее время выполнения</th><td>${formattedData.averageLiveTime || 'Нет'}</td></tr>
+                <tr><th>Статистика по типам неисправностей</th><td>${formattedData.rateTypeError || 'Нет'}</td></tr>
+            `;
+            table.innerHTML = rows;
+            console.log('Успешно найдено',formattedData);
+
+        }else{
+            const table = document.getElementById('resultTable')
+            table.style.display = 'none';
+            console.log(data.statusText);
+        }
+
+
+    }
+    go()
+</script>
+</body>
+</html>

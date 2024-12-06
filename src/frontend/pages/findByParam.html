@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Поиск по параметру</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+</head>
+<body class="container col-8">
+    <form id="findByParam">
+        <div class="mb-3">
+            <label for="selectParam" class="form-label">Поиск по:</label>
+            <select class="form-select" id="selectParam" aria-label="Default select example">
+                <option value="1">Номеру заявки</option>
+                <option value="2">ФИО</option>
+                <option value="3">Номеру телефона</option>
+                <option value="4">Статусу заявки</option>
+                <option value="5">Мастеру</option>
+                <option value="6">Модели</option>
+                <option value="7">Этапу выполнения</option>            </select>
+        </div>
+        <div class="mb-3">
+            <input type="text" class="form-control" name="param" id="param">
+        </div>
+        <button class="btn btn-primary w-100" id="submitButton">Найти заявку</button>
+    </form>
+    <table class="table w-100" style="display:none" id="resultTable">
+        <thead>
+        <tr>
+            <th scope="col">Номер заявки</th>
+            <th scope="col">Вид оргтехники</th>
+            <th scope="col">Модель</th>
+            <th scope="col">Описание проблемы</th>
+            <th scope="col">ФИО клиента</th>
+            <th scope="col">Номер телефона</th>
+            <th scope="col">Статус заявки</th>
+            <th scope="col">Этап выполнения</th>
+            <th scope="col">Мастер</th>
+        </tr>
+        </thead>
+        <tbody class="w-100">
+        <tr>
+        </tr>
+        </tbody>
+    </table>
+<script>
+    const form = document.getElementById('findByParam');
+
+    const submit = async (e) => {
+        e.preventDefault();
+        const param = document.getElementById('param').value;
+        console.log('Запрос отправлен по адресу:','http://localhost:3000/api/findByParamOrder/' + encodeURIComponent(JSON.stringify(param)))
+        const response = await fetch('http://localhost:3000/api/findByParamOrder/' + encodeURIComponent(JSON.stringify(param)),{
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+        })
+        return response
+    }
+
+    // const getAllOrders = async () => {
+    //     const response = await fetch('http://localhost:3000/api/getAllOrders',{
+    //         method: 'GET',
+    //         headers: {
+    //             'Content-Type': 'application/json'
+    //         }
+    //     })
+    //     return response.json()
+    // }
+    const go = async (e) =>{
+        // document.getElementById('submitButton').classList.add('disabled');
+        let data = await submit(e);
+        if(data.status === 200){
+            const table = document.getElementById('resultTable')
+            const formattedData = await data.json()
+            table.style.display = 'block';
+            const rows = `
+                <tr><th>Номер заказа</th><td>${formattedData.numberOfOrder}</td></tr>
+                <tr><th>ФИО клиента</th><td>${formattedData.fullName}</td></tr>
+                <tr><th>Телефон</th><td>${formattedData.numberOfPhone}</td></tr>
+                <tr><th>Модель</th><td>${formattedData.model}</td></tr>
+                <tr><th>Мастер</th><td>${formattedData.master}</td></tr>
+                <tr><th>Дата добавления</th><td>${new Date(formattedData.dateOfStart).toLocaleString()}</td></tr>
+                <tr><th>Этап выполнения</th><td>${formattedData.progress}</td></tr>
+                <tr><th>Описание</th><td>${formattedData.errorDescription}</td></tr>
+
+
+            `;
+            table.innerHTML = rows;
+            console.log('Успешно найдено',formattedData);
+
+        }else{
+            // await document.getElementById('submitButton').classList.remove('disabled');
+            const table = document.getElementById('resultTable')
+            table.style.display = 'none';
+            console.log(data.statusText);
+        }
+    }
+    form.addEventListener('submit', go);
+</script>
+</body>
+</html>
